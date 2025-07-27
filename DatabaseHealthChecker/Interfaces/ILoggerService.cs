@@ -2,5 +2,5 @@
 
 public interface ILoggerService
 {
-    Task LogAsync(IEnumerable<string> messages, CancellationToken cancellationToken = default);
+    Task LogAsync(string message, string? suffixFileName = default, CancellationToken cancellationToken = default);
 }

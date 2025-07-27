@@ -1,6 +1,6 @@
-﻿using DatabaseHealthChecker.Interfaces;
-using DatabaseHealthChecker.Models;
+﻿using DatabaseHealthChecker.Models;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -8,25 +8,40 @@ namespace DatabaseHealthChecker.Services;
 
 public class DatabaseHealthCheckerService : BackgroundService
 {
+    private readonly IServiceProvider _serviceProvider;
     private readonly AppSettings _settings;
-    private readonly ILoggerService _loggerService;
 
-    public DatabaseHealthCheckerService(IOptions<AppSettings> options, ILoggerService loggerService)
+    public DatabaseHealthCheckerService(IServiceProvider serviceProvider, IOptions<AppSettings> options)
     {
+        _serviceProvider = serviceProvider;
         _settings = options?.Value ?? throw new ArgumentNullException(nameof(options));
-        _loggerService = loggerService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        using var scopeDebug = _serviceProvider.CreateScope();
+        var _fileLoggerService = scopeDebug.ServiceProvider.GetRequiredService<FileLoggerService>();
+
+        try
         {
-            await LogConnectionStatusesAsync(cancellationToken);
-            await Task.Delay(TimeSpan.FromMinutes(_settings.HealthCheckIntervalMinutes), cancellationToken);
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var result = await GetConnectionStatusesMessageAsync(cancellationToken);
+                await _fileLoggerService.LogAsync(result, "ok");
+
+                await Task.Delay(TimeSpan.FromMinutes(_settings.HealthCheckIntervalMinutes), cancellationToken);
+            }
+
+            await _fileLoggerService.LogAsync("cancellation token requested", "cancelation");
         }
+        catch (Exception ex)
+        {
+            await _fileLoggerService.LogAsync(ex.Message, "error");
+        }
+
     }
 
-    private async Task LogConnectionStatusesAsync(CancellationToken cancellationToken)
+    private async Task<string> GetConnectionStatusesMessageAsync(CancellationToken cancellationToken)
     {
         var results = new List<string>();
         foreach (var (name, connStr) in _settings.ConnectionStrings)
@@ -34,7 +49,8 @@ public class DatabaseHealthCheckerService : BackgroundService
             string status = await CheckConnectionAsync(connStr) ? "Success" : "Unsuccess";
             results.Add($"Connection \"{name}\": {status}");
         }
-        await _loggerService.LogAsync(results, cancellationToken);
+
+        return string.Join(Environment.NewLine, results);
     }
 
     private async Task<bool> CheckConnectionAsync(string connectionString)

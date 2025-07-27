@@ -1,5 +1,4 @@
-﻿using DatabaseHealthChecker.Interfaces;
-using DatabaseHealthChecker.Models;
+﻿using DatabaseHealthChecker.Models;
 using DatabaseHealthChecker.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +14,7 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         services.Configure<AppSettings>(context.Configuration.GetSection("AppSettings"));
-        services.AddSingleton<ILoggerService, FileLoggerService>();
+        services.AddSingleton<FileLoggerService>();
         services.AddHostedService<DatabaseHealthCheckerService>();
     })
     .Build();

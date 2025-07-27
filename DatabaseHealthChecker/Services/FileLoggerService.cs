@@ -16,12 +16,12 @@ public class FileLoggerService : ILoggerService
             Directory.CreateDirectory(_settings.LogDirectoryPath);
     }
 
-    public async Task LogAsync(IEnumerable<string> messages, CancellationToken cancellationToken = default)
+    public async Task LogAsync(string messages, string? suffixFileName = default, CancellationToken cancellationToken = default)
     {
         var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
-        var fileName = $"{timestamp}.txt";
+        var fileName = $"{timestamp} {suffixFileName}.txt";
         var filePath = Path.Combine(_settings.LogDirectoryPath, fileName);
 
-        await File.WriteAllLinesAsync(filePath, messages, cancellationToken);
+        await File.WriteAllTextAsync(filePath, messages, cancellationToken);
     }
 }
