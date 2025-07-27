@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using System;
 
 namespace DatabaseHealthChecker.Services;
 
@@ -27,16 +28,16 @@ public class DatabaseHealthCheckerService : BackgroundService
             while (!cancellationToken.IsCancellationRequested)
             {
                 var result = await GetConnectionStatusesMessageAsync(cancellationToken);
-                await _fileLoggerService.LogAsync(result, "ok");
+                await _fileLoggerService.LogAsync(result, "Ok");
 
                 await Task.Delay(TimeSpan.FromMinutes(_settings.HealthCheckIntervalMinutes), cancellationToken);
             }
 
-            await _fileLoggerService.LogAsync("cancellation token requested", "cancelation");
+            await _fileLoggerService.LogAsync("cancellation token requested", "Cancelation");
         }
         catch (Exception ex)
         {
-            await _fileLoggerService.LogAsync(ex.Message, "error");
+            await _fileLoggerService.LogAsync(GetExceptionDetails(ex), "Error");
         }
 
     }
@@ -65,5 +66,24 @@ public class DatabaseHealthCheckerService : BackgroundService
         {
             return false;
         }
+    }
+
+    private static string GetExceptionDetails(Exception ex)
+    {
+        var lines = new List<string>
+        {
+            $"Exception Type: {ex.GetType().FullName}",
+            $"Message: {ex.Message}",
+            $"StackTrace: {ex.StackTrace}"
+        };
+
+        if (ex.InnerException is not null)
+        {
+            lines.Add("");
+            lines.Add("Inner Exception:");
+            lines.Add(GetExceptionDetails(ex.InnerException));
+        }
+
+        return string.Join(Environment.NewLine, lines);
     }
 }
