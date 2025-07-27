@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 Console.WriteLine("Application started...");
 
 var host = Host.CreateDefaultBuilder(args)
+    .UseWindowsService()
     .ConfigureAppConfiguration((context, config) =>
     {
         config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
