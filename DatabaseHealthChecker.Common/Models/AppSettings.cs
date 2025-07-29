@@ -1,4 +1,4 @@
-﻿namespace DatabaseHealthChecker.Models;
+﻿namespace DatabaseHealthChecker.Common.Models;
 
 public class AppSettings
 {

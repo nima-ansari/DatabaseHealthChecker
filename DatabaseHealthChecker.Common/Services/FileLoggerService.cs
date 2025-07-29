@@ -1,8 +1,8 @@
-﻿using DatabaseHealthChecker.Interfaces;
-using DatabaseHealthChecker.Models;
+﻿using DatabaseHealthChecker.Common.Interfaces;
+using DatabaseHealthChecker.Common.Models;
 using Microsoft.Extensions.Options;
 
-namespace DatabaseHealthChecker.Services;
+namespace DatabaseHealthChecker.Common.Services;
 
 public class FileLoggerService : ILoggerService
 {

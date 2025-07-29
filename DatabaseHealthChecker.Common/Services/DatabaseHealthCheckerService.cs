@@ -1,11 +1,10 @@
-﻿using DatabaseHealthChecker.Models;
+﻿using DatabaseHealthChecker.Common.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using System;
 
-namespace DatabaseHealthChecker.Services;
+namespace DatabaseHealthChecker.Common.Services;
 
 public class DatabaseHealthCheckerService : BackgroundService
 {

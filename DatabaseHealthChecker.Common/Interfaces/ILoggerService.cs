@@ -1,4 +1,4 @@
-﻿namespace DatabaseHealthChecker.Interfaces;
+﻿namespace DatabaseHealthChecker.Common.Interfaces;
 
 public interface ILoggerService
 {
